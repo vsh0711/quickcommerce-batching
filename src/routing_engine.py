@@ -70,7 +70,7 @@ def solve_routes(df, num_riders=5, rider_capacity=8):
         while not routing.IsEnd(idx):
             node = manager.IndexToNode(idx)
             if node != 0:
-                route.append(df.loc[node, "order_id"])
+                route.append(int(df.loc[node, "order_id"]))
             idx = solution.Value(routing.NextVar(idx))
         routes[f"rider_{rider}"] = route
     return routes
