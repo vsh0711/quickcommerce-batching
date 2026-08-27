@@ -1,0 +1,10 @@
+numpy
+pandas
+scikit-learn
+ortools
+fastapi
+uvicorn
+streamlit
+python-multipart
+joblib
+ortools
