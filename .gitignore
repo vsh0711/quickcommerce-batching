@@ -1,6 +1,9 @@
 venv/
+.venv/
+.venv-1/
 __pycache__/
 *.pyc
 data/raw/
 notebooks/
-.git/
+.DS_Store
+**/.DS_Store

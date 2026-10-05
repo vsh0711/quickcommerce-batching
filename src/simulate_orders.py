@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 
+from src.paths import ORDERS_CSV
+
 CHENNAI_STORES = [
    ("More Supermarket, T Nagar", 13.0418, 80.2341),
     ("Nilgiris, Nungambakkam", 13.0604, 80.2496),
@@ -19,7 +21,6 @@ CHENNAI_STORES = [
     ("Star Bazaar, Chetpet", 13.0692, 80.2410),
     ("More Supermarket, Tambaram", 12.9249, 80.1000),
 ]
-
 def offset_point(lat, lng, distance_km, bearing_deg):
     """Move (lat,lng) by distance_km along bearing_deg (0=N,90=E)."""
     R = 6371.0
@@ -32,6 +33,17 @@ def offset_point(lat, lng, distance_km, bearing_deg):
         np.cos(distance_km/R) - np.sin(lat1)*np.sin(lat2)
     )
     return np.degrees(lat2), np.degrees(lng2)
+CHENNAI_BOUNDS = {"lat_min": 12.80, "lat_max": 13.15, "lng_min": 79.95, "lng_max": 80.30}
+
+def offset_point_bounded(lat, lng, min_km=10, max_km=20, bounds=CHENNAI_BOUNDS, rng=None, max_tries=50):
+    for _ in range(max_tries):
+        dist_km = rng.uniform(min_km, max_km)
+        bearing = rng.uniform(0, 360)
+        dlat, dlng = offset_point(lat, lng, dist_km, bearing)
+        if bounds["lat_min"] <= dlat <= bounds["lat_max"] and bounds["lng_min"] <= dlng <= bounds["lng_max"]:
+            return dlat, dlng, dist_km
+    # fallback: shrink distance range and force a valid point
+    return offset_point(lat, lng, min_km, 225) + (min_km,) # SW bearing, safely inland
 
 def generate_orders(n_orders=150, seed=42):
     rng = np.random.default_rng(seed)
@@ -44,9 +56,7 @@ def generate_orders(n_orders=150, seed=42):
     rows = []
     for i in range(n_orders):
         name, slat, slng = CHENNAI_STORES[store_idx[i]]
-        dist_km = rng.uniform(10, 20)          # enforce >=10km
-        bearing = rng.uniform(0, 360)
-        dlat, dlng = offset_point(slat, slng, dist_km, bearing)
+        dlat, dlng, dist_km = offset_point_bounded(slat, slng, rng=rng)
 
         base_time = 3 + 0.8*item_count[i] + 0.15*store_load[i]
         prep_time = max(2, base_time + rng.normal(0, 1.5))
@@ -67,6 +77,7 @@ def generate_orders(n_orders=150, seed=42):
 
 if __name__ == "__main__":
     df = generate_orders()
-    df.to_csv("data/generated/orders.csv", index=False)
+    ORDERS_CSV.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(ORDERS_CSV, index=False)
     print(df.head())
     print(f"\nGenerated {len(df)} orders, min dist={df.distance_km.min():.1f}km, max={df.distance_km.max():.1f}km")
