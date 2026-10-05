@@ -2,6 +2,8 @@
 
 Assigns synthetic Chennai grocery orders to riders. Prep time is predicted with a Random Forest; travel-plus-prep cost is then minimized with an OR-Tools VRP. FastAPI serves assignments; Streamlit plots them on a map.
 
+Live API: [https://quickcommerce-batching.onrender.com](https://quickcommerce-batching.onrender.com)
+
 The point is the **ML → OR handoff**: routing does not use the simulator’s prep-time formula. It uses a model trained on that data, the same way a live system would consume predicted pick-pack minutes.
 
 ## Architecture
@@ -100,12 +102,15 @@ Leave the API URL as `http://127.0.0.1:8000`, then click **Run Batching**.
 
 Deliveries are clipped west of the Chennai coastline so map clusters stay on land.
 
-## Deploy (Render)
+## Live (Render)
 
-The repo includes `render.yaml`. After push:
+Service: [quickcommerce-batching.onrender.com](https://quickcommerce-batching.onrender.com)
 
-1. [Render Dashboard](https://dashboard.render.com) → **New** → **Blueprint**
-2. Connect `vsh0711/quickcommerce-batching`
-3. Apply the blueprint (`uvicorn src.api:app --host 0.0.0.0 --port $PORT`)
+| | |
+|---|---|
+| Health | https://quickcommerce-batching.onrender.com/health |
+| Batch | `POST` https://quickcommerce-batching.onrender.com/batch |
+| OpenAPI | https://quickcommerce-batching.onrender.com/docs |
+| Dashboard | https://dashboard.render.com/web/srv-da83mprtqb8s73b4b5og |
 
-The public URL will look like `https://quickcommerce-batching.onrender.com`. Point Streamlit’s API URL at that host after the first deploy finishes.
+In Streamlit, set **API URL** to `https://quickcommerce-batching.onrender.com`. The free instance sleeps when idle, so the first request after a pause can take a minute.
