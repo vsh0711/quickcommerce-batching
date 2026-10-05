@@ -7,15 +7,15 @@ import pandas as pd
 
 from src.paths import ORDERS_CSV
 from src.routing_engine import solve_routes
-from src.simulate_orders import generate_orders
+from src.simulate_orders import generate_orders, is_on_land
 
 
-def test_generate_orders_stays_in_bounds():
+def test_generate_orders_stays_on_land():
     df = generate_orders(n_orders=40, seed=7)
     assert len(df) == 40
-    assert df["distance_km"].min() >= 10
-    assert df["delivery_lat"].between(12.80, 13.15).all()
-    assert df["delivery_lng"].between(79.95, 80.30).all()
+    assert df["distance_km"].between(2, 6).all()
+    on_land = df.apply(lambda r: is_on_land(r.delivery_lat, r.delivery_lng), axis=1)
+    assert on_land.all(), df.loc[~on_land, ["delivery_lat", "delivery_lng", "store_name"]]
 
 
 def test_vrp_assigns_every_sampled_order():
@@ -28,6 +28,6 @@ def test_vrp_assigns_every_sampled_order():
 
 
 if __name__ == "__main__":
-    test_generate_orders_stays_in_bounds()
+    test_generate_orders_stays_on_land()
     test_vrp_assigns_every_sampled_order()
     print("pipeline tests passed")

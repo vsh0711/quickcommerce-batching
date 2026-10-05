@@ -51,7 +51,7 @@ if st.button("Run Batching"):
                 data=rider_df,
                 get_position="[delivery_lng, delivery_lat]",
                 get_color=colors[i % len(colors)],
-                get_radius=200,
+                get_radius=80,
             )
         )
         st.write(f"**{rider}**: {len(order_ids)} orders")
@@ -59,6 +59,6 @@ if st.button("Run Batching"):
     st.pydeck_chart(
         pdk.Deck(
             layers=layers,
-            initial_view_state=pdk.ViewState(latitude=13.05, longitude=80.22, zoom=9.5),
+            initial_view_state=pdk.ViewState(latitude=13.04, longitude=80.22, zoom=11),
         )
     )
