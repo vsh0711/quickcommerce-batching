@@ -15,6 +15,7 @@ num_riders = st.slider("Number of riders", 2, 10, 5)
 sample_size = st.slider("Sample orders", 10, 100, 30)
 
 if st.button("Run Batching"):
+    resp = None
     try:
         resp = requests.post(
             f"{API_URL}/batch",
@@ -25,7 +26,7 @@ if st.button("Run Batching"):
         payload = resp.json()
     except requests.RequestException as exc:
         st.error(f"API request failed: {exc}")
-        if "resp" in locals() and resp is not None:
+        if resp is not None:
             st.write("Status:", resp.status_code)
             st.write("Body:", resp.text)
         st.stop()

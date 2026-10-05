@@ -40,7 +40,7 @@ def build_time_matrix(df, avg_speed_kmph=25):
     return matrix
 
 
-def solve_routes(df, num_riders=5, rider_capacity=8):
+def solve_routes(df, num_riders=5, rider_capacity=8, time_limit_seconds=3):
     if df.empty:
         return {}
 
@@ -85,13 +85,13 @@ def solve_routes(df, num_riders=5, rider_capacity=8):
     search_params.local_search_metaheuristic = (
         routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH
     )
-    search_params.time_limit.seconds = 15
+    search_params.time_limit.seconds = time_limit_seconds
 
     solution = routing.SolveWithParameters(search_params)
     if not solution:
         return None
 
-    routes = {}
+    assigned = []
     for rider in range(num_riders):
         idx = routing.Start(rider)
         route = []
@@ -101,8 +101,8 @@ def solve_routes(df, num_riders=5, rider_capacity=8):
                 route.append(int(df.loc[node - 1, "order_id"]))
             idx = solution.Value(routing.NextVar(idx))
         if route:
-            routes[f"rider_{rider}"] = route
-    return routes
+            assigned.append(route)
+    return {f"rider_{i}": route for i, route in enumerate(assigned)}
 
 
 if __name__ == "__main__":
